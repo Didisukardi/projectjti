@@ -1,12 +1,20 @@
-<?php include('koneksi.php');
 
+<?php
+include('koneksi.php');
 
 $limit = 10; // Jumlah data yang ingin ditampilkan per halaman
 $page = isset($_GET['page']) ? $_GET['page'] : 1; // Mendapatkan nomor halaman dari URL
 
 $start = ($page - 1) * $limit; // Hitung mulai data untuk query
 
-$query = "SELECT *, TIME_FORMAT(jam, '%H:%i') AS jam_format FROM laporan ORDER BY id ASC LIMIT $start, $limit";
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "SELECT *, TIME_FORMAT(jam, '%H:%i') AS jam_format FROM laporan 
+              WHERE Petugas LIKE '%$search%' OR Kode_Error LIKE '%$search%' OR Deskripsi LIKE '%$search%' OR No_Tiket LIKE '%$search%'
+              ORDER BY id ASC LIMIT $start, $limit";
+} else {
+    $query = "SELECT *, TIME_FORMAT(jam, '%H:%i') AS jam_format FROM laporan ORDER BY id ASC LIMIT $start, $limit";
+}
 
 $result = mysqli_query($koneksi, $query);
 if (!$result) {
@@ -35,7 +43,7 @@ if ($total_pages_result) {
       font-family:"Trebuchet Ms";
     }
     h1{
-      text-transform:uppercas;
+      text-transform:uppercase;
       color:salmon;
     }
     table{
@@ -119,6 +127,12 @@ if ($total_pages_result) {
     font-size: 12px;
     text-decoration: none;
 }
+/* Style for the search form */
+.search-form {
+    text-align: right;
+    margin-right: 20px;
+}
+
 
     </style>
 </head>
@@ -126,6 +140,18 @@ if ($total_pages_result) {
     <center><h1>List Problem</h1></center>
     <center><a href="tambah_Src.php">+ &nbsp; Tambah Problem</a></center>
     <br>
+    <div class="search-form" style="margin-bottom: 20px;">
+        <form method="GET" action="Utama.php">
+            <input type="text" name="search" placeholder="Search...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+<div class="logout-button">
+    <a href="logout.php">Logout</a>
+</div>
+    
+    </form>
+
     <table>
     <thead>
         <tr>
@@ -145,14 +171,14 @@ if ($total_pages_result) {
         ?>
             <tr>
                 <td><?php echo $no ?></td>
-                <td><?php echo substr($row['Petugas'], 0, 20); ?>...</td>
+                <td><?php echo substr($row['Petugas'], 0, 20); ?> </td>
                 <td><?php echo $row['Kode_Error']; ?></td>
                 <td><?php echo $row['Deskripsi']; ?></td>
                 <td><?php echo $row['No_Tiket']; ?></td>
                 <td><?php echo $row['Jam']; ?></td>
 
                 <td>
-                    <a href="berkas/<?php echo $row['Berkas']; ?>" download class="download-link">
+                    <a href="Berkas/<?php echo $row['Berkas']; ?>" download class="download-link">
                         <span class="download-icon">⬇️</span> Download File
                     </a>
                 </td>
@@ -170,25 +196,21 @@ if ($total_pages_result) {
         ?>
     </tbody>
 </table>
-<div class="logout-button">
-    <a href="logout.php">Logout</a>
-</div>
 
-<!-- Tampilkan navigasi halaman -->
-<div style="text-align: center;">
-    <?php
-    if ($total_pages > 1) {
-        for ($i = 1; $i <= $total_pages; $i++) {
-            if ($i == $page) {
-                echo "<span>$i</span>";
-            } else {
-                echo "<a href='Utama.php?page=$i'>$i</a>";
+
+ <!-- Tampilkan navigasi halaman -->
+ <div style="text-align: center;">
+        <?php
+        if ($total_pages > 1) {
+            for ($i = 1; $i <= $total_pages; $i++) {
+                if ($i == $page) {
+                    echo "<span>$i</span>";
+                } else {
+                    echo "<a href='Utama.php?page=$i'>$i</a>";
+                }
             }
         }
-    }
-    ?>
-</div>
-
-
+        ?>
+    </div>
 </body>
 </html>
